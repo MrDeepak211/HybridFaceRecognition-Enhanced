@@ -1,0 +1,44 @@
+# ── Hybrid Face Recognition System — Config ────────────────
+# Panchalwar Mam's Research · SSIEMS Parbhani
+
+dataset:
+  orl_path: "data/ORL"
+  sheffield_path: "data/Sheffield"
+  img_size: [128, 128]
+  test_split: 0.2
+  random_state: 42
+
+features:
+  sift_n_features: 500
+  gabor_frequencies: [0.1, 0.3, 0.5]
+  gabor_thetas: [0, 45, 90, 135]
+  canny_low: 50
+  canny_high: 150
+  fusion_research: ["sift", "hog", "gabor"]       # SIFT+HOG+Gabor — Mam's focus
+  fusion_full:     ["sift", "hog", "gabor", "canny"] # All 4
+
+training:
+  epochs: 100
+  batch_size: 16
+  optimizers: ["adam", "adamax", "rmsprop", "sgd"]
+  activations: ["softmax", "sigmoid"]
+  early_stop_patience: 15
+  lr_reduce_patience: 8
+  lr_reduce_factor: 0.5
+  min_lr: 1.0e-6
+
+confidence:
+  high_threshold: 0.80
+  medium_threshold: 0.50
+
+svm:
+  kernels: ["rbf", "linear"]
+  C: 10.0
+  gamma: "scale"
+
+paths:
+  weights: "weights"
+  logs: "logs"
+  results: "results"
+  uploads: "static/uploads"
+  history: "data/recognition_history.json"

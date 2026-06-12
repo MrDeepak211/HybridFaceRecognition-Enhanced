@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Hybrid Face Recognition System — SSIEMS Parbhani</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0B0F1A;--bg2:#111827;--bg3:#1A2235;--bg4:#1F2D42;
+  --accent:#6366F1;--accent2:#8B5CF6;--teal:#14B8A6;
+  --green:#10B981;--amber:#F59E0B;--red:#EF4444;
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#64748B;
+  --border:#1E2D42;--border2:#2A3F5A;
+  --r:12px;--r2:8px;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow:hidden;}
+
+/* Sidebar */
+.sidebar{width:256px;min-width:256px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:10;}
+.logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px;}
+.logo-title{font-size:16px;font-weight:700;}.logo-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.nav-sec{padding:0 10px;margin-bottom:6px;}
+.nav-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:0 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r2);cursor:pointer;transition:.2s;color:var(--text2);font-size:13.5px;font-weight:500;margin-bottom:1px;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(139,92,246,.18));color:var(--accent);border:1px solid rgba(99,102,241,.25);}
+.nav-item i{width:16px;text-align:center;font-size:14px;}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);}
+.status-pill{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:var(--r2);font-size:11.5px;margin-bottom:6px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot.on{background:var(--green);box-shadow:0 0 5px var(--green);}.dot.off{background:var(--red);}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar-title{font-size:17px;font-weight:700;}.topbar-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.topbar-actions{display:flex;gap:10px;}
+.icon-btn{width:34px;height:34px;border-radius:var(--r2);background:var(--bg3);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:.2s;font-size:13px;}
+.icon-btn:hover{background:var(--bg4);color:var(--text);}
+.content{flex:1;overflow-y:auto;padding:24px;}
+.view{display:none;}.view.active{display:block;}
+
+/* Cards */
+.card{background:rgba(17,24,39,.9);border:1px solid var(--border);border-radius:var(--r);padding:20px;backdrop-filter:blur(10px);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.card-title i{color:var(--accent);}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.s1::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.s2::before{background:linear-gradient(90deg,var(--teal),var(--green));}
+.s3::before{background:linear-gradient(90deg,var(--amber),#f97316);}
+.s4::before{background:linear-gradient(90deg,var(--green),var(--teal));}
+.stat-label{font-size:10.5px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.stat-val{font-size:26px;font-weight:700;font-family:var(--mono);}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:3px;}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:26px;opacity:.07;}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.mb-18{margin-bottom:18px;}
+
+/* Upload */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:36px 20px;text-align:center;cursor:pointer;transition:.3s;position:relative;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(99,102,241,.04);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-icon{font-size:34px;color:var(--accent);margin-bottom:10px;opacity:.65;}
+.upload-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.upload-sub{font-size:12px;color:var(--text3);}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r2);font-size:13.5px;font-weight:500;cursor:pointer;border:none;transition:.2s;font-family:var(--font);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+.btn-secondary:hover{background:var(--bg4);color:var(--text);}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-full{width:100%;justify-content:center;}
+
+/* Form */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:11.5px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block;}
+.form-select,.form-input{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);color:var(--text);font-size:13.5px;font-family:var(--font);outline:none;transition:.2s;}
+.form-select:focus,.form-input:focus{border-color:var(--accent);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* Result */
+.result-panel{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:18px;display:none;}
+.result-panel.show{display:block;}
+.rbadge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.badge-high{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);}
+.badge-medium{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
+.badge-low{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+.conf-bar{height:7px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:7px 0;}
+.conf-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+.pred-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.pred-row:last-child{border:none;}
+.pred-rank{font-size:10.5px;font-family:var(--mono);color:var(--text3);width:22px;}
+.pred-label{flex:1;font-size:12.5px;}
+.pred-conf{font-size:11.5px;font-family:var(--mono);color:var(--accent);}
+.pred-bar-wrap{width:70px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.pred-bar{height:100%;background:var(--accent);border-radius:2px;}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.chip{padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500;}
+.chip-sift{background:rgba(99,102,241,.12);color:#818CF8;border:1px solid rgba(99,102,241,.25);}
+.chip-hog{background:rgba(20,184,166,.12);color:#5EEAD4;border:1px solid rgba(20,184,166,.25);}
+.chip-gabor{background:rgba(245,158,11,.12);color:#FCD34D;border:1px solid rgba(245,158,11,.25);}
+.chip-canny{background:rgba(239,68,68,.12);color:#FCA5A5;border:1px solid rgba(239,68,68,.25);}
+.chip-svm{background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.25);}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{padding:9px 13px;text-align:left;font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+td{padding:11px 13px;border-bottom:1px solid var(--border);color:var(--text2);}
+tr:last-child td{border:none;}
+tr:hover td{background:rgba(255,255,255,.015);}
+.best-row td{color:var(--text);}
+
+/* Pipeline */
+.pipe-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.pipe-step:last-child{border:none;}
+.step-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.step-title{font-size:13.5px;font-weight:600;margin-bottom:3px;}
+.step-desc{font-size:12.5px;color:var(--text3);line-height:1.6;}
+.step-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.stag{padding:2px 7px;border-radius:4px;font-size:11px;background:var(--bg4);color:var(--text2);}
+.stag.new{background:rgba(16,185,129,.12);color:var(--green);}
+.stag.keep{background:rgba(99,102,241,.12);color:#818CF8;}
+
+/* Camera */
+#cameraFeed{width:100%;border-radius:var(--r);background:#000;max-height:320px;object-fit:cover;}
+.cam-ctrl{display:flex;gap:8px;margin-top:10px;justify-content:center;}
+
+/* Progress */
+.prog-wrap{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin:6px 0;}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:3px;transition:width .5s ease;}
+
+/* Toast */
+.toast-wrap{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px;}
+.toast{padding:10px 16px;border-radius:var(--r2);font-size:13px;font-weight:500;animation:slideUp .3s ease;display:flex;align-items:center;gap:7px;max-width:300px;}
+.toast.success{background:rgba(16,185,129,.92);color:#fff;}
+.toast.error{background:rgba(239,68,68,.92);color:#fff;}
+.toast.info{background:rgba(99,102,241,.92);color:#fff;}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Loading */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-ov{display:none;position:absolute;inset:0;background:rgba(11,15,26,.7);border-radius:var(--r);align-items:center;justify-content:center;flex-direction:column;gap:10px;backdrop-filter:blur(3px);z-index:5;}
+.loading-ov.show{display:flex;}
+
+.img-prev{width:100%;border-radius:var(--r2);object-fit:cover;max-height:200px;border:1px solid var(--border);}
+.bdge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.bdge-best{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);}
+.bdge-eval{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
+.bdge-gray{background:var(--bg4);color:var(--text3);}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* Info box */
+.info-box{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:var(--r2);padding:10px 14px;font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.info-box strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🧠</div>
+    <div class="logo-title">HybridFace AI</div>
+    <div class="logo-sub">M.Tech Research · SSIEMS Parbhani</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Main</div>
+    <div class="nav-item active" data-view="dashboard"><i class="fa fa-gauge-high"></i>Dashboard</div>
+    <div class="nav-item" data-view="recognize"><i class="fa fa-face-smile"></i>Recognize</div>
+    <div class="nav-item" data-view="camera"><i class="fa fa-camera"></i>Live Camera</div>
+    <div class="nav-item" data-view="batch"><i class="fa fa-layer-group"></i>Batch Upload</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Research</div>
+    <div class="nav-item" data-view="comparison"><i class="fa fa-chart-bar"></i>Comparison</div>
+    <div class="nav-item" data-view="methodology"><i class="fa fa-sitemap"></i>Methodology</div>
+    <div class="nav-item" data-view="history"><i class="fa fa-clock-rotate-left"></i>History</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="status-pill">
+      <div class="dot {{ 'on' if model_loaded else 'off' }}"></div>
+      <div><div style="font-size:12px;font-weight:500;">Custom CNN</div><div style="font-size:10.5px;color:var(--text3);">{{ 'Ready' if model_loaded else 'Not Trained' }}</div></div>
+    </div>
+    <div class="status-pill">
+      <div class="dot {{ 'on' if mv2_loaded else 'off' }}"></div>
+      <div><div style="font-size:12px;font-weight:500;">MobileNetV2</div><div style="font-size:10.5px;color:var(--text3);">{{ 'Ready' if mv2_loaded else 'Not Trained' }}</div></div>
+    </div>
+    <div class="status-pill">
+      <div class="dot {{ 'on' if svm_loaded else 'off' }}"></div>
+      <div><div style="font-size:12px;font-weight:500;">SVM Classifier</div><div style="font-size:10.5px;color:var(--text3);">{{ 'Ready' if svm_loaded else 'Not Trained' }}</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-sub">Hybrid Face Recognition · Panchalwar Mam's Research · SSIEMS Parbhani</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="loadStats()" title="Refresh"><i class="fa fa-refresh"></i></button>
+      <button class="icon-btn" onclick="showView('methodology')" title="Methodology"><i class="fa fa-circle-info"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div id="view-dashboard" class="view active">
+      <div class="stats-grid">
+        <div class="stat-card s1"><div class="stat-label">Total Recognitions</div><div class="stat-val" id="st-total">—</div><div class="stat-sub">All time</div><i class="fa fa-face-smile stat-icon"></i></div>
+        <div class="stat-card s2"><div class="stat-label">Avg Confidence</div><div class="stat-val" id="st-conf">—</div><div class="stat-sub">Last session</div><i class="fa fa-percent stat-icon"></i></div>
+        <div class="stat-card s3"><div class="stat-label">Persons Detected</div><div class="stat-val" id="st-persons">—</div><div class="stat-sub">Unique identities</div><i class="fa fa-users stat-icon"></i></div>
+        <div class="stat-card s4"><div class="stat-label">Models Ready</div><div class="stat-val" id="st-models">—</div><div class="stat-sub">CNN + MV2 + SVM</div><i class="fa fa-microchip stat-icon"></i></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-bolt"></i>Quick Recognize</div></div>
+          <div class="upload-zone" id="qDrop"><input type="file" id="qFile" accept="image/*"/><div class="upload-icon"><i class="fa fa-cloud-arrow-up"></i></div><div class="upload-title">Drop image or click</div><div class="upload-sub">PNG, JPG supported</div></div>
+          <div class="form-row" style="margin-top:12px;">
+            <div class="form-group" style="margin:0"><label class="form-label">Feature Method</label>
+              <select class="form-select" id="qMethod">
+                <option value="hybrid">Hybrid Fusion</option>
+                <option value="sift">SIFT Only</option>
+                <option value="hog">HOG Only</option>
+                <option value="gabor">Gabor Only</option>
+                <option value="canny">Canny Only</option>
+              </select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Classifier</label>
+              <select class="form-select" id="qClassifier">
+                <option value="custom">Custom CNN</option>
+                <option value="mobilenetv2">MobileNetV2</option>
+                <option value="svm_rbf">SVM (RBF)</option>
+                <option value="svm_linear">SVM (Linear)</option>
+              </select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="margin:0"><label class="form-label">Activation</label>
+              <select class="form-select" id="qActivation">
+                <option value="softmax">Softmax (Primary)</option>
+                <option value="sigmoid">Sigmoid (Comparison)</option>
+              </select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Fusion Type</label>
+              <select class="form-select" id="qFusion">
+                <option value="research">Research (SIFT+HOG+Gabor)</option>
+                <option value="full">Full (SIFT+HOG+Gabor+Canny)</option>
+              </select></div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="quickRecognize()"><i class="fa fa-magnifying-glass"></i>Recognize</button>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title"><i class="fa fa-chart-pie"></i>Paper Accuracy (ORL)</div></div><canvas id="paperChart" height="210"></canvas></div>
+      </div>
+      <div class="result-panel" id="qResult" style="margin-top:18px;">
+        <div style="display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:start;">
+          <img id="qPreview" class="img-prev" src="" alt=""/>
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <div style="font-size:20px;font-weight:700;" id="qName">—</div><div id="qBadge"></div>
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:3px;">Confidence</div>
+            <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--accent);" id="qConf">—</div>
+            <div class="conf-bar"><div class="conf-fill" id="qBar" style="width:0;background:linear-gradient(90deg,var(--accent),var(--teal))"></div></div>
+            <div style="font-size:11.5px;color:var(--text3);margin-top:6px;">
+              Method: <span id="qResMethod" style="color:var(--text);">—</span> &nbsp;|&nbsp;
+              Classifier: <span id="qResModel" style="color:var(--text);">—</span> &nbsp;|&nbsp;
+              Activation: <span id="qResAct" style="color:var(--text);">—</span>
+            </div>
+            <div id="qTopPreds" style="margin-top:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ RECOGNIZE ══════════ -->
+    <div id="view-recognize" class="view">
+      <div class="grid-2">
+        <div class="card" style="position:relative;">
+          <div class="loading-ov" id="recLoading"><div class="spinner"></div><div style="font-size:12px;color:var(--text2);">Processing...</div></div>
+          <div class="card-header"><div class="card-title"><i class="fa fa-upload"></i>Upload Image</div></div>
+          <div class="upload-zone" id="recDrop"><input type="file" id="recFile" accept="image/*" onchange="previewRec(this)"/><div class="upload-icon"><i class="fa fa-image"></i></div><div class="upload-title">Select Face Image</div><div class="upload-sub">Clear frontal face for best results</div></div>
+          <img id="recPreview" class="img-prev" src="" style="display:none;margin-top:10px;" alt=""/>
+          <div style="height:14px;"></div>
+          <div class="form-group"><label class="form-label">Feature Extraction Method</label>
+            <select class="form-select" id="recMethod">
+              <option value="hybrid">🔀 Hybrid Fusion</option>
+              <option value="sift">🔵 SIFT — Scale Invariant Feature Transform</option>
+              <option value="hog">🟢 HOG — Histogram of Oriented Gradients</option>
+              <option value="gabor">🟡 Gabor — Multi-Frequency Filter Bank</option>
+              <option value="canny">🔴 Canny — Edge Detection</option>
+            </select></div>
+          <div class="form-row">
+            <div class="form-group" style="margin:0"><label class="form-label">Classifier</label>
+              <select class="form-select" id="recClassifier">
+                <option value="custom">Custom CNN</option>
+                <option value="mobilenetv2">MobileNetV2</option>
+                <option value="svm_rbf">SVM — RBF Kernel</option>
+                <option value="svm_linear">SVM — Linear Kernel</option>
+              </select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Activation Function</label>
+              <select class="form-select" id="recActivation">
+                <option value="softmax">Softmax (Primary — Mam's paper)</option>
+                <option value="sigmoid">Sigmoid (Comparison)</option>
+              </select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Fusion Type (when Hybrid selected)</label>
+            <select class="form-select" id="recFusion">
+              <option value="research">Research Fusion — SIFT + HOG + Gabor (Mam's focus)</option>
+              <option value="full">Full Hybrid — SIFT + HOG + Gabor + Canny</option>
+            </select></div>
+          <button class="btn btn-primary btn-full" onclick="runRecognize()"><i class="fa fa-magnifying-glass"></i>Run Recognition</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-chart-bar"></i>Recognition Result</div></div>
+          <div id="recEmpty" style="text-align:center;padding:48px 0;color:var(--text3);"><i class="fa fa-face-meh" style="font-size:36px;margin-bottom:10px;opacity:.25;display:block;"></i>Upload an image and run recognition</div>
+          <div id="recContent" style="display:none;">
+            <div style="text-align:center;margin-bottom:16px;">
+              <div style="font-size:13px;color:var(--text3);">Identified as</div>
+              <div style="font-size:28px;font-weight:700;margin:7px 0;" id="recName">—</div>
+              <div id="recBadge"></div>
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:3px;">Confidence Score</div>
+            <div style="font-size:26px;font-weight:700;font-family:var(--mono);color:var(--accent);" id="recConf">—</div>
+            <div class="conf-bar"><div class="conf-fill" id="recBar" style="width:0;background:linear-gradient(90deg,var(--accent),var(--teal));"></div></div>
+            <div style="padding:10px;background:var(--bg4);border-radius:var(--r2);margin:14px 0;font-size:11.5px;color:var(--text3);">
+              Classifier: <span id="recModelUsed" style="color:var(--text);">—</span> &nbsp;|&nbsp;
+              Activation: <span id="recActUsed" style="color:var(--text);">—</span> &nbsp;|&nbsp;
+              Fusion: <span id="recFusionUsed" style="color:var(--text);">—</span>
+            </div>
+            <div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:7px;">TOP 5 PREDICTIONS</div>
+            <div id="recTopPreds"></div>
+            <div class="chips" style="margin-top:14px;">
+              <span class="chip chip-sift">SIFT 128-dim</span>
+              <span class="chip chip-hog">HOG ~8100-dim</span>
+              <span class="chip chip-gabor">Gabor 24-dim</span>
+              <span class="chip chip-canny">Canny 65-dim</span>
+              <span class="chip chip-svm">SVM Available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CAMERA ══════════ -->
+    <div id="view-camera" class="view">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-camera"></i>Live Camera</div></div>
+          <video id="cameraFeed" autoplay muted></video>
+          <div class="cam-ctrl">
+            <button class="btn btn-secondary" onclick="startCam()"><i class="fa fa-play"></i>Start</button>
+            <button class="btn btn-primary" onclick="captureCam()"><i class="fa fa-camera"></i>Capture & Recognize</button>
+            <button class="btn btn-danger" onclick="stopCam()"><i class="fa fa-stop"></i>Stop</button>
+          </div>
+          <canvas id="capCanvas" style="display:none;"></canvas>
+          <div class="form-row" style="margin-top:12px;">
+            <div class="form-group" style="margin:0"><label class="form-label">Method</label>
+              <select class="form-select" id="camMethod"><option value="hybrid">Hybrid Fusion</option><option value="sift">SIFT</option><option value="hog">HOG</option><option value="gabor">Gabor</option><option value="canny">Canny</option></select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Classifier</label>
+              <select class="form-select" id="camClassifier"><option value="custom">Custom CNN</option><option value="mobilenetv2">MobileNetV2</option><option value="svm_rbf">SVM RBF</option><option value="svm_linear">SVM Linear</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="margin:0"><label class="form-label">Activation</label>
+              <select class="form-select" id="camActivation"><option value="softmax">Softmax</option><option value="sigmoid">Sigmoid</option></select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Fusion</label>
+              <select class="form-select" id="camFusion"><option value="research">Research (SIFT+HOG+Gabor)</option><option value="full">Full (all 4)</option></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-chart-bar"></i>Live Result</div></div>
+          <div id="camEmpty" style="text-align:center;padding:48px 0;color:var(--text3);"><i class="fa fa-camera" style="font-size:36px;margin-bottom:10px;opacity:.25;display:block;"></i>Capture a frame to see result</div>
+          <div id="camContent" style="display:none;">
+            <img id="camPreview" class="img-prev" src="" alt="" style="margin-bottom:14px;"/>
+            <div style="font-size:26px;font-weight:700;text-align:center;" id="camName">—</div>
+            <div style="text-align:center;margin:7px 0;" id="camBadge"></div>
+            <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--accent);text-align:center;" id="camConf">—</div>
+            <div class="conf-bar"><div class="conf-fill" id="camBar" style="width:0;background:linear-gradient(90deg,var(--green),var(--teal));"></div></div>
+            <div id="camTopPreds" style="margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ BATCH ══════════ -->
+    <div id="view-batch" class="view">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fa fa-layer-group"></i>Batch Recognition</div></div>
+        <div class="upload-zone" id="batchDrop"><input type="file" id="batchFiles" accept="image/*" multiple/><div class="upload-icon"><i class="fa fa-images"></i></div><div class="upload-title">Drop multiple images</div><div class="upload-sub">Select multiple face images for batch processing</div></div>
+        <div class="form-row-3" style="margin-top:14px;">
+          <div class="form-group" style="margin:0"><label class="form-label">Method</label>
+            <select class="form-select" id="bMethod"><option value="hybrid">Hybrid</option><option value="sift">SIFT</option><option value="hog">HOG</option><option value="gabor">Gabor</option><option value="canny">Canny</option></select></div>
+          <div class="form-group" style="margin:0"><label class="form-label">Classifier</label>
+            <select class="form-select" id="bClassifier"><option value="custom">Custom CNN</option><option value="mobilenetv2">MobileNetV2</option><option value="svm_rbf">SVM RBF</option><option value="svm_linear">SVM Linear</option></select></div>
+          <div class="form-group" style="margin:0"><label class="form-label">Activation</label>
+            <select class="form-select" id="bActivation"><option value="softmax">Softmax</option><option value="sigmoid">Sigmoid</option></select></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:4px;" onclick="runBatch()"><i class="fa fa-play"></i>Run Batch</button>
+        <div id="batchProg" style="display:none;margin-top:14px;">
+          <div style="font-size:12.5px;color:var(--text3);margin-bottom:5px;" id="batchStatus">Processing...</div>
+          <div class="prog-wrap"><div class="prog-bar" id="batchBar" style="width:0;"></div></div>
+        </div>
+        <div id="batchResults" style="margin-top:18px;display:none;">
+          <div class="card-header"><div class="card-title"><i class="fa fa-table"></i>Batch Results</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Filename</th><th>Person</th><th>Confidence</th><th>Level</th><th>Classifier</th><th>Activation</th></tr></thead><tbody id="batchTbody"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ COMPARISON ══════════ -->
+    <div id="view-comparison" class="view">
+      <div class="info-box"><strong>Mam's Published Results</strong> — The table below shows the accuracy comparison from the implementation paper. Proposed enhancements are under evaluation and will be updated after experimental validation.</div>
+      <div class="card mb-18">
+        <div class="card-header"><div class="card-title"><i class="fa fa-trophy"></i>Published Accuracy Comparison</div></div>
+        <div class="tbl-wrap"><table id="compTable"><thead><tr><th>Method</th><th>Optimizer</th><th>Activation</th><th>ORL Accuracy</th><th>Sheffield Accuracy</th><th>Status</th></tr></thead><tbody id="compTbody"></tbody></table></div>
+      </div>
+      <div class="card mb-18">
+        <div class="card-header"><div class="card-title"><i class="fa fa-flask"></i>Proposed Enhancements — Under Evaluation</div></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Proposed Method</th><th>Status</th></tr></thead><tbody id="proposedTbody"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fa fa-chart-bar"></i>Accuracy Visualization</div></div>
+        <canvas id="compChart" height="110"></canvas>
+      </div>
+    </div>
+
+    <!-- ══════════ METHODOLOGY ══════════ -->
+    <div id="view-methodology" class="view">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa fa-sitemap"></i>System Pipeline</div></div>
+          <div class="pipe-step"><div class="step-num">1</div><div><div class="step-title">Dataset</div><div class="step-desc">ORL (400 images, 40 subjects) + Sheffield (564 images, 20 subjects)</div><div class="step-tags"><span class="stag keep">ORL</span><span class="stag keep">Sheffield</span><span class="stag keep">Mam's Paper</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">2</div><div><div class="step-title">Preprocessing</div><div class="step-desc">Resize 48×48 → Grayscale → Normalize [0,1] → 80/20 stratified split</div><div class="step-tags"><span class="stag keep">Resize</span><span class="stag keep">Normalize</span><span class="stag keep">Stratified</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">3</div><div><div class="step-title">Face Alignment</div><div class="step-desc">Haar Cascade face detection → Eye-landmark detection → Rotation correction → Aligned crop</div><div class="step-tags"><span class="stag new">✨ Proposed</span><span class="stag new">Eye Landmark</span><span class="stag new">Rotation</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">4</div><div><div class="step-title">Feature Extraction</div><div class="step-desc">SIFT (128-dim) · HOG (gradient hist) · Gabor (24-dim) · Canny (65-dim) — individually selectable</div><div class="step-tags"><span class="stag keep">SIFT</span><span class="stag keep">HOG</span><span class="stag keep">Gabor</span><span class="stag keep">Canny</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">5</div><div><div class="step-title">Feature Fusion</div><div class="step-desc">Research: SIFT+HOG+Gabor (Mam's focus) · Full: SIFT+HOG+Gabor+Canny</div><div class="step-tags"><span class="stag new">✨ Proposed</span><span class="stag new">Research Fusion</span><span class="stag new">Full Hybrid</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">6</div><div><div class="step-title">Deep Model + SVM</div><div class="step-desc">Custom CNN (Mam's 4-block architecture) + MobileNetV2 (transfer learning) + SVM RBF/Linear (comparison)</div><div class="step-tags"><span class="stag keep">Custom CNN</span><span class="stag new">✨ MobileNetV2</span><span class="stag new">✨ SVM</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">7</div><div><div class="step-title">Activation Function</div><div class="step-desc">Softmax (primary — multi-class) · Sigmoid (comparison — as evaluated in Mam's paper)</div><div class="step-tags"><span class="stag keep">Softmax</span><span class="stag keep">Sigmoid</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">8</div><div><div class="step-title">Training Optimization</div><div class="step-desc">Adam/Adamax/RMSprop/SGD · BatchNorm · Early Stopping · ReduceLROnPlateau · Data Augmentation</div><div class="step-tags"><span class="stag keep">Adam</span><span class="stag new">✨ Early Stop</span><span class="stag new">✨ LR Scheduler</span></div></div></div>
+          <div class="pipe-step"><div class="step-num">9</div><div><div class="step-title">Output</div><div class="step-desc">Predicted identity + Confidence Score: High (≥80%) · Medium (50–80%) · Low (&lt;50%)</div><div class="step-tags"><span class="stag new">✨ Confidence Scoring</span><span class="stag new">3 Levels</span></div></div></div>
+        </div>
+        <div>
+          <div class="card mb-18">
+            <div class="card-header"><div class="card-title"><i class="fa fa-book"></i>Research Paper</div></div>
+            <div style="font-size:13.5px;font-weight:600;margin-bottom:7px;">A Comprehensive Review of Hybrid Approaches in Deep Learning-Based Face Recognition</div>
+            <div style="font-size:12.5px;color:var(--text3);line-height:1.7;">SIFT, HOG, Gabor, Canny + Custom CNN · ORL + Sheffield datasets<br><br>Best: <strong style="color:var(--green);">SIFT + CNN + Adam + Softmax → ORL 92.5% | Sheffield 100%</strong></div>
+          </div>
+          <div class="card mb-18">
+            <div class="card-header"><div class="card-title"><i class="fa fa-tag"></i>Legend</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:10px;"><span class="stag keep" style="display:inline-block;">Mam's Paper</span><span style="font-size:12.5px;color:var(--text3);">Retained from implementation paper</span></div>
+              <div style="display:flex;align-items:center;gap:10px;"><span class="stag new" style="display:inline-block;">✨ Proposed</span><span style="font-size:12.5px;color:var(--text3);">Enhancement for evaluation — subject to Mam's approval</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fa fa-circle-info"></i>Confidence Scoring</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(16,185,129,.06);border-radius:var(--r2);border:1px solid rgba(16,185,129,.2);"><span class="rbadge badge-high">High</span><span style="font-size:12.5px;color:var(--text2);">Confidence ≥ 80%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(245,158,11,.06);border-radius:var(--r2);border:1px solid rgba(245,158,11,.2);"><span class="rbadge badge-medium">Medium</span><span style="font-size:12.5px;color:var(--text2);">Confidence 50% – 80%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(239,68,68,.06);border-radius:var(--r2);border:1px solid rgba(239,68,68,.2);"><span class="rbadge badge-low">Low</span><span style="font-size:12.5px;color:var(--text2);">Confidence &lt; 50%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ HISTORY ══════════ -->
+    <div id="view-history" class="view">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-clock-rotate-left"></i>Recognition History</div>
+          <button class="btn btn-danger btn-sm" onclick="clearHistory()"><i class="fa fa-trash"></i>Clear</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr><th>#</th><th>Time</th><th>Person</th><th>Confidence</th><th>Level</th><th>Method</th><th>Classifier</th><th>Activation</th><th>Source</th></tr></thead>
+          <tbody id="histTbody"><tr><td colspan="9" style="text-align:center;color:var(--text3);padding:28px;">No history yet</td></tr></tbody></table>
+        </div>
+        <div style="display:flex;justify-content:center;gap:6px;margin-top:14px;" id="histPaging"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── Nav ─────────────────────────────────────────────────────
+const titles={dashboard:'Dashboard',recognize:'Face Recognition',camera:'Live Camera',batch:'Batch Upload',comparison:'Comparison Results',methodology:'Methodology',history:'History'};
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>showView(n.dataset.view)));
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  const el=document.getElementById('view-'+v);if(el)el.classList.add('active');
+  const ni=document.querySelector(`.nav-item[data-view="${v}"]`);if(ni)ni.classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[v]||v;
+  if(v==='history')loadHistory();
+  if(v==='comparison')loadComparison();
+}
+
+// ── Toast ────────────────────────────────────────────────────
+function toast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<i class="fa fa-${type==='success'?'check':type==='error'?'xmark':'info'}-circle"></i>${msg}`;
+  document.getElementById('toastWrap').appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+// ── Stats ────────────────────────────────────────────────────
+async function loadStats(){
+  try{
+    const d=await(await fetch('/api/stats')).json();
+    document.getElementById('st-total').textContent=d.totalRecognitions;
+    document.getElementById('st-conf').textContent=d.averageConfidence;
+    document.getElementById('st-persons').textContent=d.personsCount;
+    const cnt=[d.modelLoaded,d.mv2Loaded,d.svmLoaded].filter(Boolean).length;
+    document.getElementById('st-models').textContent=cnt+'/3';
+  }catch(e){}
+}
+loadStats();
+
+// ── Helpers ──────────────────────────────────────────────────
+function lvlBadge(l){
+  const c=l==='High'?'badge-high':l==='Medium'?'badge-medium':'badge-low';
+  return `<span class="rbadge ${c}"><i class="fa fa-circle" style="font-size:7px;"></i>${l||'—'} Confidence</span>`;
+}
+function buildPreds(preds,el){
+  if(!preds||!el)return;
+  el.innerHTML=preds.map((p,i)=>{
+    const c=parseFloat(p.confidence);
+    return `<div class="pred-row"><div class="pred-rank">#${i+1}</div><div class="pred-label">${p.label||'Person '+(p.class_id+1)}</div><div class="pred-bar-wrap"><div class="pred-bar" style="width:${c}%"></div></div><div class="pred-conf">${p.confidence}</div></div>`;
+  }).join('');
+}
+function fillResult(d,ids){
+  const conf=parseFloat(d.confidence);
+  document.getElementById(ids.name).textContent=d.class_id!==undefined?`Person ${d.class_id+1}`:'—';
+  document.getElementById(ids.badge).innerHTML=lvlBadge(d.confidence_level);
+  document.getElementById(ids.conf).textContent=d.confidence;
+  document.getElementById(ids.bar).style.width=conf+'%';
+  buildPreds(d.top_predictions,document.getElementById(ids.preds));
+}
+
+// ── Quick Recognize ───────────────────────────────────────
+document.getElementById('qFile').addEventListener('change',function(){if(this.files[0])quickRecognize();});
+async function quickRecognize(){
+  const file=document.getElementById('qFile').files[0];
+  if(!file){toast('Select an image','error');return;}
+  const fd=new FormData();
+  fd.append('file',file);fd.append('method',document.getElementById('qMethod').value);
+  fd.append('classifier',document.getElementById('qClassifier').value);
+  fd.append('activation',document.getElementById('qActivation').value);
+  fd.append('fusion',document.getElementById('qFusion').value);
+  try{
+    const d=await(await fetch('/predict',{method:'POST',body:fd})).json();
+    if(d.error){toast(d.error,'error');return;}
+    document.getElementById('qPreview').src=URL.createObjectURL(file);
+    fillResult(d,{name:'qName',badge:'qBadge',conf:'qConf',bar:'qBar',preds:'qTopPreds'});
+    document.getElementById('qResMethod').textContent=d.method;
+    document.getElementById('qResModel').textContent=d.model_used;
+    document.getElementById('qResAct').textContent=d.activation;
+    document.getElementById('qResult').classList.add('show');
+    toast('Done!','success');loadStats();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ── Full Recognize ────────────────────────────────────────
+function previewRec(inp){const f=inp.files[0];if(!f)return;const p=document.getElementById('recPreview');p.src=URL.createObjectURL(f);p.style.display='block';}
+async function runRecognize(){
+  const file=document.getElementById('recFile').files[0];
+  if(!file){toast('Select an image','error');return;}
+  document.getElementById('recLoading').classList.add('show');
+  const fd=new FormData();
+  fd.append('file',file);fd.append('method',document.getElementById('recMethod').value);
+  fd.append('classifier',document.getElementById('recClassifier').value);
+  fd.append('activation',document.getElementById('recActivation').value);
+  fd.append('fusion',document.getElementById('recFusion').value);
+  try{
+    const d=await(await fetch('/predict',{method:'POST',body:fd})).json();
+    document.getElementById('recLoading').classList.remove('show');
+    if(d.error){toast(d.error,'error');return;}
+    document.getElementById('recEmpty').style.display='none';
+    document.getElementById('recContent').style.display='block';
+    fillResult(d,{name:'recName',badge:'recBadge',conf:'recConf',bar:'recBar',preds:'recTopPreds'});
+    document.getElementById('recModelUsed').textContent=d.model_used;
+    document.getElementById('recActUsed').textContent=d.activation;
+    document.getElementById('recFusionUsed').textContent=d.fusion_type==='research'?'SIFT+HOG+Gabor':'SIFT+HOG+Gabor+Canny';
+    toast('Recognition complete!','success');loadStats();
+  }catch(e){document.getElementById('recLoading').classList.remove('show');toast('Error: '+e.message,'error');}
+}
+
+// ── Camera ────────────────────────────────────────────────
+let camStream=null;
+async function startCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:true});document.getElementById('cameraFeed').srcObject=camStream;toast('Camera started','success');}catch(e){toast('Camera error: '+e.message,'error');}}
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;toast('Camera stopped','info');}}
+async function captureCam(){
+  const v=document.getElementById('cameraFeed'),c=document.getElementById('capCanvas');
+  c.width=v.videoWidth||640;c.height=v.videoHeight||480;
+  c.getContext('2d').drawImage(v,0,0);
+  const img=c.toDataURL('image/jpeg',0.8);
+  try{
+    const d=await(await fetch('/api/camera-capture',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:img,method:document.getElementById('camMethod').value,
+        classifier:document.getElementById('camClassifier').value,
+        activation:document.getElementById('camActivation').value,
+        fusion:document.getElementById('camFusion').value})})).json();
+    if(d.error){toast(d.error,'error');return;}
+    document.getElementById('camEmpty').style.display='none';
+    document.getElementById('camContent').style.display='block';
+    document.getElementById('camPreview').src=img;
+    fillResult(d,{name:'camName',badge:'camBadge',conf:'camConf',bar:'camBar',preds:'camTopPreds'});
+    toast('Captured!','success');loadStats();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ── Batch ─────────────────────────────────────────────────
+async function runBatch(){
+  const files=document.getElementById('batchFiles').files;
+  if(!files.length){toast('Select files first','error');return;}
+  const fd=new FormData();
+  for(const f of files)fd.append('files[]',f);
+  fd.append('method',document.getElementById('bMethod').value);
+  fd.append('classifier',document.getElementById('bClassifier').value);
+  fd.append('activation',document.getElementById('bActivation').value);
+  fd.append('fusion','research');
+  document.getElementById('batchProg').style.display='block';
+  document.getElementById('batchBar').style.width='30%';
+  document.getElementById('batchStatus').textContent=`Processing ${files.length} images...`;
+  try{
+    const d=await(await fetch('/api/batch-predict',{method:'POST',body:fd})).json();
+    document.getElementById('batchBar').style.width='100%';
+    document.getElementById('batchStatus').textContent=`Done — ${d.success} succeeded, ${d.failed} failed`;
+    document.getElementById('batchResults').style.display='block';
+    document.getElementById('batchTbody').innerHTML=d.results.map((r,i)=>`
+      <tr><td>${i+1}</td><td style="font-family:var(--mono);font-size:11.5px;">${r.filename}</td>
+      <td>Person ${r.class_id+1}</td>
+      <td style="font-family:var(--mono);color:var(--accent);">${r.confidence}</td>
+      <td><span class="rbadge ${r.confidence_level==='High'?'badge-high':r.confidence_level==='Medium'?'badge-medium':'badge-low'}">${r.confidence_level||'—'}</span></td>
+      <td style="font-size:11.5px;">${r.model_used||'—'}</td>
+      <td style="font-size:11.5px;">${r.activation||'—'}</td></tr>`).join('');
+    toast(`Batch done — ${d.success}/${files.length}`,'success');
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+// ── Comparison ────────────────────────────────────────────
+async function loadComparison(){
+  try{
+    const d=await(await fetch('/api/comparison-results')).json();
+    document.getElementById('compTbody').innerHTML=d.paper_results.map(r=>`
+      <tr class="${r.best?'best-row':''}">
+        <td>${r.method}</td><td>${r.optimizer}</td><td>${r.activation}</td>
+        <td style="font-family:var(--mono);color:${r.best?'var(--green)':'var(--text)'};">${r.orl_acc}</td>
+        <td style="font-family:var(--mono);color:${r.best?'var(--green)':'var(--text)'};">${r.sheffield_acc}</td>
+        <td>${r.best?'<span class="bdge bdge-best">⭐ Best</span>':'<span class="bdge bdge-gray">Evaluated</span>'}</td>
+      </tr>`).join('');
+    document.getElementById('proposedTbody').innerHTML=d.proposed.map(p=>`
+      <tr><td>${p.method}</td><td><span class="bdge bdge-eval">Under Evaluation</span></td></tr>`).join('');
+    // Chart
+    const labels=d.paper_results.map(r=>r.method.split('+')[0]);
+    const orl=d.paper_results.map(r=>parseFloat(r.orl_acc));
+    const shd=d.paper_results.map(r=>parseFloat(r.sheffield_acc));
+    const ctx=document.getElementById('compChart').getContext('2d');
+    if(window._cc)window._cc.destroy();
+    window._cc=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+      {label:'ORL Accuracy (%)',data:orl,backgroundColor:'rgba(99,102,241,.7)',borderColor:'rgba(99,102,241,1)',borderWidth:1.5,borderRadius:4},
+      {label:'Sheffield Accuracy (%)',data:shd,backgroundColor:'rgba(20,184,166,.7)',borderColor:'rgba(20,184,166,1)',borderWidth:1.5,borderRadius:4}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#94A3B8',font:{size:12}}}},
+      scales:{x:{ticks:{color:'#64748B'},grid:{color:'rgba(255,255,255,.03)'}},
+              y:{min:70,max:105,ticks:{color:'#64748B'},grid:{color:'rgba(255,255,255,.03)'}}}}});
+  }catch(e){console.error(e);}
+}
+
+// ── Paper Donut Chart ─────────────────────────────────────
+async function loadPaperChart(){
+  try{
+    const d=await(await fetch('/api/comparison-results')).json();
+    const ctx=document.getElementById('paperChart').getContext('2d');
+    new Chart(ctx,{type:'doughnut',data:{
+      labels:d.paper_results.map(r=>r.method.replace(' + CNN','')),
+      datasets:[{data:d.paper_results.map(r=>parseFloat(r.orl_acc)),
+        backgroundColor:['rgba(99,102,241,.8)','rgba(20,184,166,.8)','rgba(245,158,11,.8)','rgba(239,68,68,.8)'],borderWidth:0}]
+    },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#94A3B8',font:{size:11},padding:10}}}}});
+  }catch(e){}
+}
+loadPaperChart();
+
+// ── History ───────────────────────────────────────────────
+async function loadHistory(page=1){
+  try{
+    const d=await(await fetch(`/api/history?page=${page}&limit=20`)).json();
+    const tb=document.getElementById('histTbody');
+    if(!d.records.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:28px;">No history yet</td></tr>';return;}
+    tb.innerHTML=d.records.map((r,i)=>`
+      <tr><td style="color:var(--text3);">${(page-1)*20+i+1}</td>
+      <td style="font-size:11.5px;font-family:var(--mono);color:var(--text3);">${new Date(r.timestamp||Date.now()).toLocaleString()}</td>
+      <td>Person ${(r.class_id||0)+1}</td>
+      <td style="font-family:var(--mono);color:var(--accent);">${r.confidence||'—'}</td>
+      <td><span class="rbadge ${r.confidence_level==='High'?'badge-high':r.confidence_level==='Medium'?'badge-medium':'badge-low'}">${r.confidence_level||'—'}</span></td>
+      <td style="font-size:11.5px;">${r.method||'—'}</td>
+      <td style="font-size:11.5px;">${r.model_used||'—'}</td>
+      <td style="font-size:11.5px;">${r.activation||'—'}</td>
+      <td style="font-size:11.5px;color:var(--text3);">${r.source||'—'}</td></tr>`).join('');
+    const pages=Math.ceil(d.total/20);
+    document.getElementById('histPaging').innerHTML=Array.from({length:Math.min(pages,8)},(_,i)=>
+      `<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-secondary'}" onclick="loadHistory(${i+1})">${i+1}</button>`).join('');
+  }catch(e){}
+}
+async function clearHistory(){
+  if(!confirm('Clear all history?'))return;
+  await fetch('/api/history',{method:'DELETE'});
+  loadHistory();toast('History cleared','info');
+}
+
+// ── Drag & Drop ───────────────────────────────────────────
+['qDrop','recDrop','batchDrop'].forEach(id=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag');});
+  el.addEventListener('dragleave',()=>el.classList.remove('drag'));
+  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag');});
+});
+</script>
+</body>
+</html>

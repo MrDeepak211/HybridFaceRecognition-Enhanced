@@ -1,0 +1,32 @@
+[
+  {
+    "class_id": 0,
+    "confidence": "100.00%",
+    "processed_image": "static/uploads\\camera_20260430_124053.png",
+    "feature_count": 8252,
+    "top_predictions": [
+      {
+        "class_id": 0,
+        "confidence": "100.00%"
+      },
+      {
+        "class_id": 2,
+        "confidence": "0.00%"
+      },
+      {
+        "class_id": 1,
+        "confidence": "0.00%"
+      },
+      {
+        "class_id": 3,
+        "confidence": "0.00%"
+      },
+      {
+        "class_id": 4,
+        "confidence": "0.00%"
+      }
+    ],
+    "timestamp": "2026-04-30T12:40:54.138118",
+    "source": "camera"
+  }
+]
